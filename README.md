@@ -1,2 +1,7 @@
 # CeMicrodata.jl
-Pull data from the Consumer Expenditure (CE) Public Use Microdata (PUMD)
+```CeMicrodata.jl``` pulls data from the Consumer Expenditure (CE) Public Use Microdata (PUMD) into Julia.
+
+```julia
+import Pkg;
+Pkg.add("CeMicrodata");
+```
