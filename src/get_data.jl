@@ -43,7 +43,7 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
             if file_name[end-2] != "0"
                 new_key = "$(file_prefix)_19$(file_name[end-2:end])";
             else
-                new_key = "$(file_prefix)_20$(file_name[end-2:end])"
+                new_key = "$(file_prefix)_20$(file_name[end-2:end])";
             end
 
             new_SortedDict_entry = SortedDict(new_key => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
