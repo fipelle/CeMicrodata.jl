@@ -20,31 +20,33 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
     # Memory pre-allocation
     last = "";
     buffer = Vector{DataFrame}();
-    output = Vector{QuarterlyDataFrames}(undef, length(prefixes));    
+    output = Vector{Vector{NamedTuple}}(undef, length(prefixes));    
 
     # Loop over downloaded csv files
     for file_name_ext in sort(readdir("$(download_folder)/$(survey_id)"))
         file_name = split(file_name_ext, ".")[1];
+        file_prefix = file_name[1:end-3];
 
-        # Proceed if `file_name[1:end-3]` is in the target prefixes
-        if file_name[1:end-3] ∈ prefixes
+        # Proceed if `file_prefix` is in the target prefixes
+        if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes)
 
             # Populate `buffer`
-            if file_name == last
-                push!(buffer, CSV.read("$(download_folder)/$(survey_id)/file_name_ext", DataFrame));
+            if file_prefix == last
+                push!(buffer, CSV.read("$(download_folder)/$(survey_id)/$(file_name_ext)", DataFrame));
             
             # New iteration
             else
+                
                 # Populate `output`
                 if length(buffer) > 0
-                    coord_current_file = findfirst(file_name[1:end-3] .∈ prefixes);
+                    coord_current_file = findfirst(file_prefix .∈ prefixes);
                     output[coord_current_file] = QuarterlyDataFrames(buffer...);
+                    empty!(buffer);
                 end
 
                 # Re-initialise
-                empty!(buffer);
-                push!(buffer, CSV.read("$(download_folder)/$(survey_id)/file_name_ext", DataFrame));
-                last = copy(file_name);
+                push!(buffer, CSV.read("$(download_folder)/$(survey_id)/$(file_name_ext)", DataFrame));
+                last = String(file_prefix);
             end
         end
     end
