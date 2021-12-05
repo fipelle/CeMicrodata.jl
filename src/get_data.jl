@@ -40,7 +40,13 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
         # Proceed if `file_prefix` is in the target prefixes
         if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes)
 
-            new_SortedDict_entry = SortedDict("$(file_name)" => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
+            if file_name[end-2] != "0"
+                new_key = "$(file_prefix)_19$(file_name[end-2:end])";
+            else
+                new_key = "$(file_prefix)_20$(file_name[end-2:end])"
+            end
+
+            new_SortedDict_entry = SortedDict(new_key => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
 
             # Populate `buffer`
             if file_prefix == last
