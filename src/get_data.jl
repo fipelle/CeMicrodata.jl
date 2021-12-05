@@ -19,10 +19,10 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
     
     # Memory pre-allocation: sorting problem
     last = "";
-    buffer = Dict{String, DataFrame}();
+    buffer = SortedDict{String, DataFrame}();
 
     # Memory pre-allocation: output
-    output = Vector{Dict{String, DataFrame}}(undef, length(prefixes));    
+    output = Vector{SortedDict{String, DataFrame}}(undef, length(prefixes));    
 
     # Accounts for naming inconsistencies in the folders
     survey_path = "$(download_folder)/$(survey_id)";
@@ -40,11 +40,11 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
         # Proceed if `file_prefix` is in the target prefixes
         if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes)
 
-            new_dict_entry = Dict("$(file_name)" => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
+            new_SortedDict_entry = SortedDict("$(file_name)" => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
 
             # Populate `buffer`
             if file_prefix == last
-                merge!(buffer, new_dict_entry);
+                merge!(buffer, new_SortedDict_entry);
             
             # New iteration
             else
@@ -56,7 +56,7 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
                 end
 
                 # Re-initialise
-                merge!(buffer, new_dict_entry);
+                merge!(buffer, new_SortedDict_entry);
                 last = String(file_prefix);
             end
         end
@@ -79,7 +79,7 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
     
     # Memory pre-allocation: output
     n_prefixes = length(prefixes);
-    output = Vector{Dict{String, DataFrame}}(undef, n_prefixes);    
+    output = Vector{SortedDict{String, DataFrame}}(undef, n_prefixes);    
 
     for t=from_year:to_year
         @info("Downloading survey referring to year $(t)");

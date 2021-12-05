@@ -7,3 +7,11 @@ Pkg.add("CeMicrodata");
 ```
 
 Note: the package depends on ```unzip```.
+
+## Example
+
+include("./src/CeMicrodata.jl"); using Main.CeMicrodata;
+prefixes=["itbi", "memi"];
+output = get_data(prefixes, true, 2019, 2020);
+
+output[1]
