@@ -5,3 +5,5 @@
 import Pkg;
 Pkg.add("CeMicrodata");
 ```
+
+Note: the package depends on ```unzip```.
