@@ -12,10 +12,9 @@ Note: the package depends on ```unzip```.
 
 ```julia
 include("./src/CeMicrodata.jl"); using Main.CeMicrodata;
-prefixes=["itbi", "memi"];
-output = get_data(prefixes, true, 2019, 2020);
-```
-
-```julia
-output[1]
+using Plots, StatsPlots;
+prefixes=["mtbi"];
+output = get_data(prefixes, true, 1984, 2020);
+hh_output = get_hh_level_mtbi(output[1], quarterly_aggregation=true);
+@df hh_output violin(:REF_DATE, :EXPEND)
 ```
