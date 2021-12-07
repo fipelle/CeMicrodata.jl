@@ -11,5 +11,5 @@ module CeMicrodata
     include("$(local_path)/transform_data.jl");
 
     # Export
-    export get_data, get_hh_level_mtbi;
+    export get_data, get_hh_level;
 end
