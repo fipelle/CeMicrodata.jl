@@ -8,7 +8,8 @@ module CeMicrodata
     # Custom dependencies
     local_path = dirname(@__FILE__);
     include("$(local_path)/get_data.jl");
+    include("$(local_path)/transform_data.jl");
 
     # Export
-    export get_data;
+    export get_data, get_hh_level_mtbi;
 end
