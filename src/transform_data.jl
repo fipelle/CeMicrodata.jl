@@ -1,9 +1,36 @@
 """
-    get_hh_level(monthly_input::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
+    merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{Symbol})
 
-Convert itbi and mtbi data at household level, in a "long" DataFrame format.
+Merge FMLI vintages.
 """
-function get_hh_level(monthly_input::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
+function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{Symbol})
+   
+    # Memory pre-allocation for output
+    output = DataFrame();
+
+    # Loop over monthly tables
+    for (k, v) in fmli_files
+
+        # Select target variables
+        v_selection = copy(v[!, mnemonics]);
+
+        # Update output
+        if size(output, 1) == 0
+            output = v_selection;
+        else
+            append!(output, v_selection);
+        end
+    end
+
+    return output;
+end
+
+"""
+    get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
+
+Convert income or expenditure data at household level (in a "long" DataFrame format)
+"""
+function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
     
     if (is_itbi && is_mtbi) || (!is_itbi && !is_mtbi)
         error("`is_itbi` or `is_mtbi` must be true.");
@@ -21,7 +48,7 @@ function get_hh_level(monthly_input::SortedDict{String, DataFrame}; is_itbi::Boo
     output = DataFrame();
 
     # Loop over monthly tables
-    for (k,v) in monthly_input
+    for (k,v) in input_dict
 
         # Copy original data
         v_copy = copy(v); # this line slows done the code, but allows to compute the hh level data without changing the input monthly table
@@ -44,7 +71,7 @@ function get_hh_level(monthly_input::SortedDict{String, DataFrame}; is_itbi::Boo
             v_grouped = combine(groupby(v_copy, [:NEWID, :REF_DATE]), :VALUE=>sum);
             rename!(v_grouped, Dict(:VALUE_sum => "HH_DATA"));
 
-        elseif is_mtbi
+        else
             v_grouped = combine(groupby(v_copy, [:NEWID, :REF_DATE]), :COST=>sum);
             rename!(v_grouped, Dict(:COST_sum => "HH_DATA"));
         end
