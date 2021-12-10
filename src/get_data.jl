@@ -105,3 +105,57 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
 
     return output;
 end
+
+"""
+    get_stubs()
+
+Return stubs tables in DataFrame format.
+"""
+function get_stubs()
+
+    # Download stubs
+    download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
+    Downloads.download("https://www.bls.gov/cex/pumd/stubs.zip", "$(download_folder)/stubs.zip");
+    run(`unzip -qq $(download_folder)/stubs.zip -d $(download_folder)/`);
+
+    # Memory pre-allocation for output
+    output = Array{DataFrame}(undef, 3); 
+
+    for file_name_ext in sort(readdir("$(download_folder)/stubs/"))
+        readdlm_output = readdlm("$(download_folder)/stubs/$(file_name_ext)", '\n');
+        for line in readdlm_output
+            if (line[1] != '*') && (line[1] != '2') # skip comments and secondary details on the UCC description
+                
+                # Sort content
+                content = [file_name_ext[end-7:end-4],  # Reference year
+                           strip(line[1:3]),            # Type of information in the line
+                           strip(line[4:6]),            # Level of aggregation
+                           strip(line[7:69]),           # Name of the UCC
+                           strip(line[70:79]),          # UCC lists the identifier of the UCC
+                           strip(line[80:82]),          # Source or purpose of the UCC
+                           strip(line[83:85]),          # Factor by which the mean has to be multiplied to match the annualized data in the published tables
+                           strip(line[86:end])];        # Data sections
+                           
+                df_row = DataFrame(permutedims(content), [:ref_year, :type, :level, :name, :UCC, :source, :factor, :section]);
+
+                # Store to the appropriate DataFrame
+                survey_type = split(file_name_ext, '-')[end-1];
+                if survey_type == "Diary"
+                    output_coord = 1;
+                elseif survey_type == "Integ"
+                    output_coord = 2;
+                elseif survey_type == "Inter"
+                    output_coord = 3;
+                end
+
+                if isassigned(output, output_coord)
+                    append!(output[output_coord], df_row);
+                else
+                    output[output_coord] = df_row;
+                end
+            end
+        end
+    end
+
+    return output;
+end
