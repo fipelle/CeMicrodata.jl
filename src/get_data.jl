@@ -131,15 +131,19 @@ function get_stubs()
                 txt_offset = ifelse(parse(Int64, ref_year) < 2013, 0, 3);
 
                 # Sort content
-                content = [ref_year,                                     # Reference year
-                           strip(line[1:3]),                             # Type of information in the line
-                           strip(line[4:6]),                             # Level of aggregation
-                           strip(line[7:69]),                            # Name of the UCC
-                           strip(line[70:79+txt_offset]),                # UCC lists the identifier of the UCC
-                           strip(line[80+txt_offset:82+txt_offset]),     # Source or purpose of the UCC
-                           strip(line[83+txt_offset:85+txt_offset]),     # Factor by which the mean has to be multiplied to match the annualized data in the published tables
-                           strip(line[86+txt_offset:end])];              # Data sections
-                           
+                content = [ref_year,                              # Reference year
+                           line[1:3],                             # Type of information in the line
+                           line[4:6],                             # Level of aggregation
+                           line[7:69],                            # Name of the UCC
+                           line[70:79+txt_offset],                # UCC lists the identifier of the UCC
+                           line[80+txt_offset:82+txt_offset],     # Source or purpose of the UCC
+                           line[83+txt_offset:85+txt_offset],     # Factor by which the mean has to be multiplied to match the annualized data in the published tables
+                           line[86+txt_offset:end]];              # Data sections
+                
+                for i in 1:8
+                    content[i] = strip(content[i]);
+                end
+
                 df_row = DataFrame(permutedims(content), [:ref_year, :type, :level, :name, :UCC, :source, :factor, :section]);
 
                 # Store to the appropriate DataFrame
