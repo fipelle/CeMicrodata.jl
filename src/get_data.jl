@@ -126,15 +126,19 @@ function get_stubs()
         for line in readdlm_output
             if (line[1] != '*') && (line[1] != '2') # skip comments and secondary details on the UCC description
                 
+                # Reference year
+                ref_year = file_name_ext[end-7:end-4];
+                txt_offset = ifelse(parse(Int64, ref_year) < 2013, 0, 3);
+
                 # Sort content
-                content = [file_name_ext[end-7:end-4],  # Reference year
-                           strip(line[1:3]),            # Type of information in the line
-                           strip(line[4:6]),            # Level of aggregation
-                           strip(line[7:69]),           # Name of the UCC
-                           strip(line[70:79]),          # UCC lists the identifier of the UCC
-                           strip(line[80:82]),          # Source or purpose of the UCC
-                           strip(line[83:85]),          # Factor by which the mean has to be multiplied to match the annualized data in the published tables
-                           strip(line[86:end])];        # Data sections
+                content = [ref_year,                                     # Reference year
+                           strip(line[1:3]),                             # Type of information in the line
+                           strip(line[4:6]),                             # Level of aggregation
+                           strip(line[7:69]),                            # Name of the UCC
+                           strip(line[70:79+txt_offset]),                # UCC lists the identifier of the UCC
+                           strip(line[80+txt_offset:82+txt_offset]),     # Source or purpose of the UCC
+                           strip(line[83+txt_offset:85+txt_offset]),     # Factor by which the mean has to be multiplied to match the annualized data in the published tables
+                           strip(line[86+txt_offset:end])];              # Data sections
                            
                 df_row = DataFrame(permutedims(content), [:ref_year, :type, :level, :name, :UCC, :source, :factor, :section]);
 
