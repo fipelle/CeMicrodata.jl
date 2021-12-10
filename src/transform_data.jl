@@ -3,8 +3,11 @@
 
 Merge FMLI vintages.
 """
-function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{Symbol})
-   
+function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{String})
+
+    # Convenient conversion
+    mnemonics_sym = Symbol.(unique(vcat("QINTRVYR", "QINTRVMO", mnemonics)));
+    
     # Memory pre-allocation for output
     output = DataFrame();
 
@@ -12,7 +15,17 @@ function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::
     for (k, v) in fmli_files
 
         # Select target variables
-        v_selection = copy(v[!, mnemonics]);
+        v_selection = copy(v[!, mnemonics_sym]);
+        for row in eachrow(v_selection)
+            if row[:QINTRVYR] < 20 # YY rather than YYYY and referring to 20YY
+                row[:QINTRVYR] += 2000;
+            elseif 20 < row[:QINTRVYR] < 100 # YY rather than YYYY and referring to 19YY
+                row[:QINTRVYR] += 1900;
+            end
+        end
+
+        # Add REF_DATE
+        transform!(v_selection, [:QINTRVYR, :QINTRVMO] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
 
         # Update output
         if size(output, 1) == 0
@@ -26,11 +39,11 @@ function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::
 end
 
 """
-    get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
+    get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{Int64}}=nothing, quarterly_aggregation::Bool=false)
 
 Convert income or expenditure data at household level (in a "long" DataFrame format)
 """
-function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, quarterly_aggregation::Bool=false)
+function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{Int64}}=nothing, quarterly_aggregation::Bool=false)
     
     if (is_itbi && is_mtbi) || (!is_itbi && !is_mtbi)
         error("`is_itbi` or `is_mtbi` must be true.");
@@ -58,6 +71,11 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
             elseif 20 < row[ref_year] < 100 # YY rather than YYYY and referring to 19YY
                 row[ref_year] += 1900;
             end
+        end
+
+        if !isnothing(UCC_selection)
+            transform!(v_copy, :UCC => ByRow(ucc -> ucc ∈ UCC_selection) => :include_UCC);
+            v_copy = v_copy[findall(v_copy[!,:include_UCC]), :];
         end
 
         if quarterly_aggregation == false
