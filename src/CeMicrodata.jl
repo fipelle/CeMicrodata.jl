@@ -11,5 +11,6 @@ module CeMicrodata
     include("$(local_path)/transform_data.jl");
 
     # Export
-    export get_data, get_hh_level;
+    export get_data, get_stubs,
+           get_hh_level, merge_fmli_files;
 end
