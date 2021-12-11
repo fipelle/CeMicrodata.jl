@@ -1,4 +1,19 @@
 """
+    UCC_column_as_strings!(df::DataFrame, UCCs::Vector{String})
+
+Return `nothing`.
+
+    UCC_column_as_strings!(df::DataFrame, UCCs::Vector{Int64})
+
+Parse UCC column into strings.
+"""
+UCC_column_as_strings!(df::DataFrame, UCCs::Vector{String}) = nothing;
+
+function UCC_column_as_strings!(df::DataFrame, UCCs::Vector{Int64})
+    df[!,:UCC] = string.(df[!, :UCC]);
+end
+
+"""
     merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{Symbol})
 
 Merge FMLI vintages.
@@ -39,11 +54,11 @@ function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::
 end
 
 """
-    get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{Int64}}=nothing, quarterly_aggregation::Bool=false)
+    get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{String}}=nothing, quarterly_aggregation::Bool=false)
 
 Convert income or expenditure data at household level (in a "long" DataFrame format)
 """
-function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{Int64}}=nothing, quarterly_aggregation::Bool=false)
+function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=false, is_mtbi::Bool=false, UCC_selection::Union{Nothing, Vector{String}}=nothing, quarterly_aggregation::Bool=false)
     
     if (is_itbi && is_mtbi) || (!is_itbi && !is_mtbi)
         error("`is_itbi` or `is_mtbi` must be true.");
@@ -65,6 +80,8 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
 
         # Copy original data
         v_copy = copy(v); # this line slows done the code, but allows to compute the hh level data without changing the input monthly table
+        UCC_column_as_strings!(v_copy, v_copy[!,:UCC]);
+
         for row in eachrow(v_copy)
             if row[ref_year] < 20 # YY rather than YYYY and referring to 20YY
                 row[ref_year] += 2000;

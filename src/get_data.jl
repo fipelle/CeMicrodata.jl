@@ -38,7 +38,7 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
         file_prefix = file_name[1:end-3];
 
         # Proceed if `file_prefix` is in the target prefixes
-        if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes)
+        if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes) # this implicitly skips the tables ending with 'x'
 
             if file_name[end-2] == '9'
                 new_key = "$(file_prefix)_19$(file_name[end-2:end])";
