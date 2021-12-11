@@ -14,7 +14,7 @@ function UCC_column_as_strings!(df::DataFrame, UCCs::Vector{Int64})
 end
 
 """
-    merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{Symbol})
+    merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{String})
 
 Merge FMLI vintages.
 """
