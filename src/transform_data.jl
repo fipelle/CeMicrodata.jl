@@ -39,8 +39,8 @@ function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::
             end
         end
 
-        # Add REF_DATE
-        transform!(v_selection, [:QINTRVYR, :QINTRVMO] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
+        # Add :REF_DATE
+        @transform! v_selection @byrow :REF_DATE = Dates.lastdayofmonth(:QINTRVYR, :QINTRVMO);
 
         # Update output
         if size(output, 1) == 0
@@ -91,14 +91,14 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
         end
 
         if !isnothing(UCC_selection)
-            transform!(v_copy, :UCC => ByRow(ucc -> ucc ∈ UCC_selection) => :include_UCC);
+            @transform! v_copy @byrow :include_UCC = :UCC ∈ UCC_selection;
             v_copy = v_copy[findall(v_copy[!,:include_UCC]), :];
         end
 
         if quarterly_aggregation == false
-            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
+            @transform! v_copy @byrow :REF_DATE = Dates.lastdayofmonth(:ref_year, :ref_month);
         else
-            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofquarter(Date(year, month))) => :REF_DATE);
+            @transform! v_copy @byrow :REF_DATE = Dates.lastdayofquarter(:ref_year, :ref_month);
         end
 
         # Construct grouped data
