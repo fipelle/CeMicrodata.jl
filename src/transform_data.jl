@@ -96,9 +96,9 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
         end
 
         if quarterly_aggregation == false
-            @transform! v_copy @byrow :REF_DATE = Dates.lastdayofmonth(ref_year, ref_month);
+            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
         else
-            @transform! v_copy @byrow :REF_DATE = Dates.lastdayofquarter(ref_year, ref_month);
+            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofquarter(Date(year, month))) => :REF_DATE);
         end
 
         # Construct grouped data
