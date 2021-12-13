@@ -38,9 +38,15 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
         file_prefix = file_name[1:end-3];
 
         # Proceed if `file_prefix` is in the target prefixes
-        if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes)
+        if !isnothing(findfirst(".", file_name_ext)) && (file_prefix ∈ prefixes) # this implicitly skips the tables ending with 'x'
 
-            new_SortedDict_entry = SortedDict("$(file_name)" => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
+            if file_name[end-2] == '9'
+                new_key = "$(file_prefix)_19$(file_name[end-2:end])";
+            else
+                new_key = "$(file_prefix)_20$(file_name[end-2:end])";
+            end
+
+            new_SortedDict_entry = SortedDict(new_key => CSV.read("$(survey_path)/$(file_name_ext)", DataFrame));
 
             # Populate `buffer`
             if file_prefix == last
@@ -92,6 +98,68 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
                     merge!(output[i], new_entries[i])
                 else
                     output[i] = new_entries[i];
+                end
+            end
+        end
+    end
+
+    return output;
+end
+
+"""
+    get_stubs()
+
+Return stubs tables in DataFrame format.
+"""
+function get_stubs()
+
+    # Download stubs
+    download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
+    Downloads.download("https://www.bls.gov/cex/pumd/stubs.zip", "$(download_folder)/stubs.zip");
+    run(`unzip -qq $(download_folder)/stubs.zip -d $(download_folder)/`);
+
+    # Memory pre-allocation for output
+    output = Array{DataFrame}(undef, 3); 
+
+    for file_name_ext in sort(readdir("$(download_folder)/stubs/"))
+        readdlm_output = readdlm("$(download_folder)/stubs/$(file_name_ext)", '\n');
+        for line in readdlm_output
+            if (line[1] != '*') && (line[1] != '2') # skip comments and secondary details on the UCC description
+                
+                # Reference year
+                ref_year = file_name_ext[end-7:end-4];
+                txt_offset = ifelse(parse(Int64, ref_year) < 2013, 0, 3);
+
+                # Sort content
+                content = [ref_year,                              # Reference year
+                           line[1:3],                             # Type of information in the line
+                           line[4:6],                             # Level of aggregation
+                           line[7:69],                            # Name of the UCC
+                           line[70:79+txt_offset],                # UCC lists the identifier of the UCC
+                           line[80+txt_offset:82+txt_offset],     # Source or purpose of the UCC
+                           line[83+txt_offset:85+txt_offset],     # Factor by which the mean has to be multiplied to match the annualized data in the published tables
+                           line[86+txt_offset:end]];              # Data sections
+                
+                for i in 1:8
+                    content[i] = strip(content[i]);
+                end
+
+                df_row = DataFrame(permutedims(content), [:ref_year, :type, :level, :name, :UCC, :source, :factor, :section]);
+
+                # Store to the appropriate DataFrame
+                survey_type = split(file_name_ext, '-')[end-1];
+                if survey_type == "Diary"
+                    output_coord = 1;
+                elseif survey_type == "Integ"
+                    output_coord = 2;
+                elseif survey_type == "Inter"
+                    output_coord = 3;
+                end
+
+                if isassigned(output, output_coord)
+                    append!(output[output_coord], df_row);
+                else
+                    output[output_coord] = df_row;
                 end
             end
         end
