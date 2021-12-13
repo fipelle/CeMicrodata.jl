@@ -40,7 +40,7 @@ function merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::
         end
 
         # Add :REF_DATE
-        @transform! v_selection @byrow :REF_DATE = Dates.lastdayofmonth(:QINTRVYR, :QINTRVMO);
+        @transform! v_selection @byrow :REF_DATE = Dates.lastdayofmonth(Date(:QINTRVYR, :QINTRVMO));
 
         # Update output
         if size(output, 1) == 0
