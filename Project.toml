@@ -1,6 +1,6 @@
 name = "CeMicrodata"
 uuid = "11053890-0308-406b-94d3-d76ebcae6419"
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
