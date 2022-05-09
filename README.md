@@ -29,7 +29,7 @@ PlotlyJS.plot(
 # Plotting
 hh_output_plot = copy(hh_output);
 hh_output_plot[!,:REF_YEAR] = lastdayofyear.(hh_output_plot[!,:REF_DATE]);
-hh_output_plot = combine(groupby(hh_output_plot, [:NEWID, :REF_YEAR]), :HH_DATA=>sum);
+hh_output_plot = combine(groupby(hh_output_plot, [:CUSTOM_CUID, :REF_YEAR]), :HH_DATA=>sum);
 PlotlyJS.plot(
     hh_output_plot,
     x=:REF_YEAR, 
