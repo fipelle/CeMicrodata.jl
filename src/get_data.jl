@@ -49,6 +49,11 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
             # Store current csv file into a DataFrame
             new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
             
+            # Include custom identifier for CUs
+            if "NEWID" ∈ names(new_SortedDict_item)
+                new_SortedDict_item[!, :CUSTOM_CUID] = [parse(Int64, string(id)[1:end-1]) for id in new_SortedDict_item[!, :NEWID]];
+            end
+            
             # Generate `new_SortedDict_entry`
             new_SortedDict_entry = SortedDict(new_key => new_SortedDict_item);
 
