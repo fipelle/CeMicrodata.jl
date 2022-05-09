@@ -103,11 +103,11 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
 
         # Construct grouped data
         if is_itbi
-            v_grouped = combine(groupby(v_copy, [:NEWID, :REF_DATE]), :VALUE=>sum);
+            v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :VALUE=>sum);
             rename!(v_grouped, Dict(:VALUE_sum => "HH_DATA"));
 
         else
-            v_grouped = combine(groupby(v_copy, [:NEWID, :REF_DATE]), :COST=>sum);
+            v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :COST=>sum);
             rename!(v_grouped, Dict(:COST_sum => "HH_DATA"));
         end
 
