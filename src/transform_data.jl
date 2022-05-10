@@ -14,6 +14,32 @@ function UCC_column_as_strings!(df::DataFrame, UCCs::Vector{Int64})
 end
 
 """
+    quarterly_hh_level!(df::DataFrame)
+
+Convert `df` at quarterly frequency.
+"""
+function quarterly_hh_level!(df::DataFrame)
+
+    # Construct :REFMO from :REF_DATE
+    transform!(df, :REF_DATE => ByRow(x -> Dates.month(x)) => :REFMO);
+
+    # Convert monthly reference periods to end of quarters
+    transform!(df, :REF_DATE => ByRow(x -> Dates.lastdayofquarter(x)), renamecols=false);
+
+    # Aggregate at quarterly frequency
+    quarterly_df = combine(groupby(df, [:CUSTOM_CUID, :REF_DATE]), :HH_DATA=>sum, :REFMO=>(x -> length(unique(x))));
+    rename!(quarterly_df, Dict(:HH_DATA_sum => "HH_DATA"));
+    rename!(quarterly_df, Dict(:REFMO_function => "MONTHS_PER_REF_DATE"));
+
+    # Filter out incomplete quarters
+    filter!(row -> row.MONTHS_PER_REF_DATE == 3, quarterly_df);
+    select!(quarterly_df, Not(:MONTHS_PER_REF_DATE));
+    
+    # Return output
+    return quarterly_df;
+end
+
+"""
     merge_fmli_files(fmli_files::SortedDict{String, DataFrame}, mnemonics::Vector{String})
 
 Merge FMLI vintages.
@@ -95,13 +121,9 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
             v_copy = v_copy[findall(v_copy[!,:include_UCC]), :];
         end
 
-        if quarterly_aggregation == false
-            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
-        else
-            transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofquarter(Date(year, month))) => :REF_DATE);
-        end
+        # Aggregate at monthly frequency to remove duplicates
+        transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
 
-        # Construct grouped data
         if is_itbi
             v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :VALUE=>sum);
             rename!(v_grouped, Dict(:VALUE_sum => "HH_DATA"));
@@ -117,6 +139,11 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
         else
             append!(output, v_grouped);
         end
+    end
+
+    # Return output
+    if quarterly_aggregation
+        output = quarterly_hh_level!(output);
     end
     
     return output;
