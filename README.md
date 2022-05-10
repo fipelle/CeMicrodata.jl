@@ -16,7 +16,7 @@ include("./src/CeMicrodata.jl"); using Main.CeMicrodata;
 using Dates, DataFrames, PlotlyJS, Statistics;
 prefixes=["itbi", "mtbi", "fmli"];
 output = get_data(prefixes, true, 1990, 2020);
-hh_output = get_hh_level(output[1], is_itbi=true, UCC_selection=[900000], quarterly_aggregation=false);
+hh_output = get_hh_level(output[1], is_itbi=true, UCC_selection=["900000"], quarterly_aggregation=false);
 
 # Aggregate data
 hh_output_aggregate = combine(groupby(hh_output, [:REF_DATE]), :HH_DATA=>mean);
