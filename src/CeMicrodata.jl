@@ -12,5 +12,5 @@ module CeMicrodata
 
     # Export
     export get_data, get_stubs,
-           get_hh_level, merge_fmli_files;
+           get_hh_level, merge_fmli_files, quarterly_hh_level!;
 end
