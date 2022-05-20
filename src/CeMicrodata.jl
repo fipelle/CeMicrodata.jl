@@ -3,7 +3,7 @@ __precompile__()
 module CeMicrodata
 
     # Dependencies
-    using CSV, DataStructures, DelimitedFiles, Dates, DataFrames, DataFramesMeta, Downloads, Logging;
+    using CSV, DataFrames, DataFramesMeta, DataStructures, Dates, DelimitedFiles, Downloads, Logging, Statistics;
 
     # Custom dependencies
     local_path = dirname(@__FILE__);
