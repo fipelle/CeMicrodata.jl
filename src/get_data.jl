@@ -86,18 +86,20 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
 end
 
 """
-    get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year::Int64, to_year::Int64)
+    get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year::Int64, to_year::Int64; verbose::Bool=true)
 
 Get data of interest from `from_year` to `to_year`.
 """
-function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year::Int64, to_year::Int64)
+function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year::Int64, to_year::Int64; verbose::Bool=true)
     
     # Memory pre-allocation: output
     n_prefixes = length(prefixes);
     output = Vector{SortedDict{String, DataFrame}}(undef, n_prefixes);    
 
     for t=from_year:to_year
-        @info("Downloading survey referring to year $(t)");
+        if verbose
+            @info("Downloading survey referring to year $(t)");
+        end
         download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
         survey_id = download_csv_files(string(t), is_interview_survey, download_folder);
         new_entries = csv_files_to_dataframes(survey_id, download_folder, prefixes);
