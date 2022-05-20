@@ -1,19 +1,28 @@
 # CeMicrodata.jl
 ```CeMicrodata.jl``` pulls data from the Consumer Expenditure (CE) Public Use Microdata (PUMD) into Julia.
 
-```julia
-import Pkg;
-Pkg.add("CeMicrodata");
+## Installation
+
+The package can be installed with the Julia package manager.
+From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
+
+```
+pkg> add CeMicrodata
 ```
 
-Note: the package depends on ```unzip```.
+Or, equivalently, via the `Pkg` API:
+
+```julia
+julia> import Pkg; Pkg.add("CeMicrodata")
+```
+
+Note: the package depends on ```unzip``` which needs to be manually installed and available from the terminal.
 
 ## Example
 
 ```julia
 # Collect income data
-include("./src/CeMicrodata.jl"); using Main.CeMicrodata;
-using Dates, DataFrames, PlotlyJS, Statistics;
+using CeMicrodata, CSV, Dates, DataFrames, PlotlyJS, Statistics;
 prefixes=["itbi", "mtbi", "fmli"];
 output = get_data(prefixes, true, 1990, 2020);
 hh_output = get_hh_level(output[1], is_itbi=true, UCC_selection=["900000"], quarterly_aggregation=false);
