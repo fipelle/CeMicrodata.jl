@@ -116,7 +116,7 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         if verbose
             @info("Downloading survey referring to year $(t)");
         end
-        if year >= 2022
+        if t >= 2022
             download_prefix = "csv";
         else
             download_prefix = "comma";
