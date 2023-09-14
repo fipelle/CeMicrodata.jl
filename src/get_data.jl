@@ -1,9 +1,9 @@
 """
-    download_csv_files(ref_year::String, is_interview_survey::Bool, download_folder::String)
+    download_csv_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
 
 Download csv files for a given reference year and survey (interview / diary).
 """
-function download_csv_files(ref_year::String, is_interview_survey::Bool, download_folder::String)
+function download_csv_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
     
     # Setup headers
     headers = Dict(
@@ -21,7 +21,7 @@ function download_csv_files(ref_year::String, is_interview_survey::Bool, downloa
   
     # Download csv file
     survey_id = ifelse(is_interview_survey, "intrvw$(ref_year[end-1:end])", "diary$(ref_year[end-1:end])");
-    Downloads.download("https://www.bls.gov/cex/pumd/data/comma/$(survey_id).zip", "$(download_folder)/$(survey_id).zip", headers=headers);
+    Downloads.download("https://www.bls.gov/cex/pumd/data/$(download_prefix)/$(survey_id).zip", "$(download_folder)/$(survey_id).zip", headers=headers);
     run(`unzip -qq $(download_folder)/$(survey_id).zip -d $(download_folder)/`);
     return survey_id;
 end
@@ -116,8 +116,13 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         if verbose
             @info("Downloading survey referring to year $(t)");
         end
+        if year >= 2022
+            download_prefix = "csv";
+        else
+            download_prefix = "comma";
+        end
         download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
-        survey_id = download_csv_files(string(t), is_interview_survey, download_folder);
+        survey_id = download_csv_files(string(t), is_interview_survey, download_prefix, download_folder);
         new_entries = csv_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
             if isassigned(new_entries, i)
