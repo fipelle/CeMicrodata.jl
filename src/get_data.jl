@@ -1,9 +1,9 @@
 """
-    download_csv_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
+    download_ce_pumd_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
 
-Download csv files for a given reference year and survey (interview / diary).
+Download ce_pumd files for a given reference year and survey (interview / diary).
 """
-function download_csv_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
+function download_ce_pumd_files(ref_year::String, is_interview_survey::Bool, download_prefix::String, download_folder::String)
     
     # Setup headers
     headers = Dict(
@@ -19,7 +19,7 @@ function download_csv_files(ref_year::String, is_interview_survey::Bool, downloa
         "Sec-Fetch-User:" => "?1"
     )
   
-    # Download csv file
+    # Download ce_pumd file
     survey_id = ifelse(is_interview_survey, "intrvw$(ref_year[end-1:end])", "diary$(ref_year[end-1:end])");
     Downloads.download("https://www.bls.gov/cex/pumd/data/$(download_prefix)/$(survey_id).zip", "$(download_folder)/$(survey_id).zip", headers=headers);
     run(`unzip -qq $(download_folder)/$(survey_id).zip -d $(download_folder)/`);
@@ -27,11 +27,11 @@ function download_csv_files(ref_year::String, is_interview_survey::Bool, downloa
 end
 
 """
-    csv_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
+    ce_pumd_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
 
-Convert the downloaded csv files of interest (identified via the use of `prefixes`) to Julia data.
+Convert the downloaded ce_pumd files of interest (identified via the use of `prefixes`) to Julia data.
 """
-function csv_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
+function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
     
     # Memory pre-allocation: sorting problem
     last = "";
@@ -48,7 +48,7 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
         readdir_output = sort(readdir(survey_path));
     end
 
-    # Loop over the content in `readdir_output` and focus on the csv files
+    # Loop over the content in `readdir_output` and focus on the ce_pumd files
     for file_name_ext in readdir_output
         file_name = split(file_name_ext, ".")[1];
         file_prefix = file_name[1:end-3];
@@ -62,8 +62,11 @@ function csv_files_to_dataframes(survey_id::String, download_folder::String, pre
                 new_key = "$(file_prefix)_20$(file_name[end-2:end])";
             end
 
-            # Store current csv file into a DataFrame
-            new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
+            # Store current ce_pumd file into a DataFrame
+
+            # Remove comment for csv files
+            # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
+            new_SortedDict_item = DataFrame(load("$(survey_path)/$(file_name_ext)"));
             
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
@@ -116,14 +119,22 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         if verbose
             @info("Downloading survey referring to year $(t)");
         end
+        
+        #=
+        Remove comment to download csv files
+
         if t >= 2022
             download_prefix = "csv";
         else
             download_prefix = "comma";
         end
+        =#
+
+        download_prefix = "stata";
+        
         download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
-        survey_id = download_csv_files(string(t), is_interview_survey, download_prefix, download_folder);
-        new_entries = csv_files_to_dataframes(survey_id, download_folder, prefixes);
+        survey_id = download_ce_pumd_files(string(t), is_interview_survey, download_prefix, download_folder);
+        new_entries = ce_pumd_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
             if isassigned(new_entries, i)
                 if isassigned(output, i)
