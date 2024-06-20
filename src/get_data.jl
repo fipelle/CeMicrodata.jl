@@ -68,7 +68,11 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
             # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
             println(survey_id)
             println(file_name_ext)
-            new_SortedDict_item = DataFrame(load("$(survey_path)/$(file_name_ext)"));
+            new_SortedDict_item_struct = read_dta("$(survey_path)/$(file_name_ext)");
+            new_SortedDict_item = DataFrame(
+                new_SortedDict_item_struct.data, 
+                new_SortedDict_item_struct.headers
+            );
             
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
