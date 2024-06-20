@@ -66,8 +66,6 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
 
             # Remove comment for csv files
             # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
-            println(survey_id)
-            println(file_name_ext)
             new_SortedDict_item_struct = read_dta("$(survey_path)/$(file_name_ext)");
             new_SortedDict_item = DataFrame(
                 new_SortedDict_item_struct.data, 
