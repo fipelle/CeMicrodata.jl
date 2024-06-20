@@ -136,7 +136,7 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
 
         download_prefix = "stata";
         
-        download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
+        download_folder = "."; #mktempdir(prefix="ce_pumd_", cleanup=true);
         survey_id = download_ce_pumd_files(string(t), is_interview_survey, download_prefix, download_folder);
         new_entries = ce_pumd_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
