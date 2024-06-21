@@ -65,11 +65,20 @@ function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
                     try
                         df[!, col] = parse.(Float64, df[!, col]);
                     catch
-                        df[!, col] = convert(Vector{String}, df[!, col])
+                        df[!, col] = convert(Vector{String}, df[!, col]);
                     end
                 end
             
             elseif col_type <: Union{Missing, AbstractString}
+                try
+                    df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
+                catch
+                    try
+                        df[!, col] = parse.(Union{Missing, Float64}, df[!, col]);
+                    catch
+                        df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                    end
+                end
             
             else
                 try
