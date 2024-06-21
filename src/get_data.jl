@@ -80,7 +80,7 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
             
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
-                new_SortedDict_item[!, :CUSTOM_CUID] = [parse(Int64, string(id)[1:end-1]) for id in new_SortedDict_item[!, :NEWID]];
+                new_SortedDict_item[!, :CUSTOM_CUID] = [parse(Int64, string(Int64(id))[1:end-1]) for id in new_SortedDict_item[!, :NEWID]];
             end
             
             # Generate `new_SortedDict_entry`
