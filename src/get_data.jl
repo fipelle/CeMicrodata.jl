@@ -78,10 +78,7 @@ function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
                     catch
                         df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
                     end
-                end
-            
-            else
-                error("Unsupported column type: $col_type in column: $col of DataFrame with key: $key")
+                end            
             end
         end
     end
