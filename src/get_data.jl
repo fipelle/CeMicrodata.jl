@@ -73,11 +73,7 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
 
             # Remove comment for csv files
             # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
-            new_SortedDict_item_struct = read_dta("$(survey_path)/$(file_name_ext)");
-            new_SortedDict_item = DataFrame(
-                new_SortedDict_item_struct.data, 
-                new_SortedDict_item_struct.headers
-            );
+            new_SortedDict_item = DataFrame(readstat("$(survey_path)/$(file_name_ext)"));
             
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
@@ -143,7 +139,7 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
 
         download_prefix = "stata";
         
-        download_folder = "."; #mktempdir(prefix="ce_pumd_", cleanup=true);
+        download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
         survey_id = download_ce_pumd_files(string(t), is_interview_survey, download_prefix, download_folder);
         new_entries = ce_pumd_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
