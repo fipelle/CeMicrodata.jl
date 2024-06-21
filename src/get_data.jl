@@ -22,7 +22,7 @@ function download_ce_pumd_files(ref_year::String, is_interview_survey::Bool, dow
     # Download ce_pumd file
     survey_id = ifelse(is_interview_survey, "intrvw$(ref_year[end-1:end])", "diary$(ref_year[end-1:end])");
     Downloads.download("https://www.bls.gov/cex/pumd/data/$(download_prefix)/$(survey_id).zip", "$(download_folder)/$(survey_id).zip", headers=headers);
-    run(`unzip -qq $(download_folder)/$(survey_id).zip -d $(download_folder)/`);
+    run(`unzip -qq $(download_folder)/$(survey_id).zip -d $(download_folder)/$(survey_id)`);
     return survey_id;
 end
 
