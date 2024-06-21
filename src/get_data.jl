@@ -58,24 +58,28 @@ function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
             # Check the current type of the column
             col_type = eltype(df[!, col]);
             
-            # Skip if already one of the target types
-            if col_type <: target_types
-                continue;
-            end
+            if col_type <: Union{AbstractFloat, AbstractString}
+                try
+                    df[!, col] = convert(Vector{Int64}, df[!, col]);
+                catch
+                    try
+                        df[!, col] = convert(Vector{Float64}, df[!, col])
+                    catch
+                        df[!, col] = convert(Vector{String}, df[!, col])
+                    end
+                end
             
-            # Convert the column to the appropriate target type
-            if col_type <: Integer
-                df[!, col] = convert(Vector{Int64}, df[!, col])
-            elseif col_type <: Union{Integer, Missing}
-                df[!, col] = convert(Vector{Union{Missing, Int64}}, df[!, col])
-            elseif col_type <: AbstractFloat
-                df[!, col] = convert(Vector{Float64}, df[!, col])
-            elseif col_type <: Union{AbstractFloat, Missing}
-                df[!, col] = convert(Vector{Union{Missing, Float64}}, df[!, col])
-            elseif col_type <: AbstractString
-                df[!, col] = convert(Vector{String}, df[!, col])
-            elseif col_type <: Union{AbstractString, Missing}
-                df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col])
+            elseif col_type <: Union{Union{Missing, AbstractFloat}, Union{Missing, AbstractString}}
+                try
+                    df[!, col] = convert(Vector{Union{Missing, Int64}}, df[!, col]);
+                catch
+                    try
+                        df[!, col] = convert(Vector{Union{Missing, Float64}}, df[!, col]);
+                    catch
+                        df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                    end
+                end
+            
             else
                 error("Unsupported column type: $col_type in column: $col of DataFrame with key: $key")
             end
