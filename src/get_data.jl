@@ -43,6 +43,13 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
     # Accounts for naming inconsistencies in the folders
     survey_path = "$(download_folder)/$(survey_id)";
     readdir_output = sort(readdir(survey_path));
+
+    # If binary data is zipped within the original zip
+    if "$(survey_id).zip" ∈ readdir_output
+        run(`unzip -qq $(survey_path)/$(survey_id).zip`);
+    end
+    
+    # Folder inconsistency
     if "$(survey_id)" ∈ readdir_output
         survey_path = "$(download_folder)/$(survey_id)/$(survey_id)";
         readdir_output = sort(readdir(survey_path));
