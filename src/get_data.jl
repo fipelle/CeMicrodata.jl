@@ -75,6 +75,9 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
             # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
             new_SortedDict_item = DataFrame(readstat("$(survey_path)/$(file_name_ext)"));
             
+            # Capitalize all column names (this is to align sas and stata files to csv)
+            rename!(new_SortedDict_item, Symbol.(uppercase.(String.(names(new_SortedDict_item)))));
+            
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
                 new_SortedDict_item[!, :CUSTOM_CUID] = [parse(Int64, string(id)[1:end-1]) for id in new_SortedDict_item[!, :NEWID]];
