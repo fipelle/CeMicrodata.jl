@@ -64,12 +64,12 @@ function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
             end
             
             # Convert the column to the appropriate target type
-            if col_type <: Integer
-                df[!, col] = convert(Vector{Int64}, df[!, col]);
-            elseif col_type <: AbstractFloat
-                df[!, col] = convert(Vector{Float64}, df[!, col]);
-            elseif col_type <: AbstractString
-                df[!, col] = convert(Vector{String}, df[!, col]);
+            if col_type <: Union{Integer, Union{Integer, Missing}}
+                df[!, col] = convert(Vector{Union{Missing, Int64}}, df[!, col]);
+            elseif col_type <: Union{AbstractFloat, Union{AbstractFloat, Missing}}
+                df[!, col] = convert(Vector{Union{Missing, Float64}}, df[!, col]);
+            elseif col_type <: Union{AbstractString, Union{AbstractString, Missing}}
+                df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
             else
                 error("Unsupported column type: $col_type in column: $col of DataFrame with key: $key")
             end
