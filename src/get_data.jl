@@ -27,6 +27,21 @@ function download_ce_pumd_files(ref_year::String, is_interview_survey::Bool, dow
 end
 
 """
+    safe_parse_id(id)
+
+Safely parse values to Int64.
+"""
+safe_parse_id(id::Numeric) = parse(Int64, string(Int64(id))[1:end-1]);
+
+function safe_parse_id(id::String15)
+    if id[end] != "."
+        return parse(Int64, id[1:end-1]);
+    else
+        return parse(Int64, "$(id[1:end-2]).0");
+    end
+end
+
+"""
     ce_pumd_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
 
 Convert the downloaded ce_pumd files of interest (identified via the use of `prefixes`) to Julia data.
@@ -80,7 +95,7 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
             
             # Include custom identifier for CUs
             if "NEWID" ∈ names(new_SortedDict_item)
-                new_SortedDict_item[!, :CUSTOM_CUID] = [parse(Int64, string(Int64(id))[1:end-1]) for id in new_SortedDict_item[!, :NEWID]];
+                new_SortedDict_item[!, :CUSTOM_CUID] = [safe_parse_id(id) for id in new_SortedDict_item[!, :NEWID]];
             end
             
             # Generate `new_SortedDict_entry`
