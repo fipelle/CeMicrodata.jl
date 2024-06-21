@@ -31,7 +31,7 @@ end
 
 Safely parse values to Int64.
 """
-safe_parse_id(id::Numeric) = parse(Int64, string(Int64(id))[1:end-1]);
+safe_parse_id(id::Number) = parse(Int64, string(Int64(id))[1:end-1]);
 
 function safe_parse_id(id::String15)
     if id[end] != "."
