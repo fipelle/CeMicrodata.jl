@@ -13,6 +13,10 @@ function UCC_column_as_strings!(df::DataFrame, UCCs::Vector{Int64})
     df[!,:UCC] = string.(df[!, :UCC]);
 end
 
+function UCC_column_as_strings!(df::DataFrame, UCCs::Vector{String7})
+    df[!,:UCC] = string.(df[!, :UCC]);
+end
+
 """
     quarterly_hh_level!(df::DataFrame)
 
