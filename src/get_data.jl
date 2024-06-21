@@ -42,6 +42,44 @@ function safe_parse_id(id::String15)
 end
 
 """
+    harmonize_column_types(data_dict::SortedDict{String, DataFrame})
+
+Harmonise column types within SortedDict of DataFrames.
+"""
+function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
+    
+    # Define target types
+    target_types = Union{Int64, Float64, String};
+    
+    for (key, df) in data_dict
+
+        for col in names(df)
+
+            # Check the current type of the column
+            col_type = eltype(df[!, col]);
+            
+            # Skip if already one of the target types
+            if col_type <: target_types
+                continue;
+            end
+            
+            # Convert the column to the appropriate target type
+            if col_type <: Integer
+                df[!, col] = convert(Vector{Int64}, df[!, col]);
+            elseif col_type <: AbstractFloat
+                df[!, col] = convert(Vector{Float64}, df[!, col]);
+            elseif col_type <: AbstractString
+                df[!, col] = convert(Vector{String}, df[!, col]);
+            else
+                error("Unsupported column type: $col_type in column: $col of DataFrame with key: $key")
+            end
+        end
+    end
+    
+    return data_dict;
+end
+
+"""
     ce_pumd_files_to_dataframes(survey_id::String, download_folder::String, prefixes::Vector{String})
 
 Convert the downloaded ce_pumd files of interest (identified via the use of `prefixes`) to Julia data.
@@ -163,9 +201,9 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         for i=1:n_prefixes
             if isassigned(new_entries, i)
                 if isassigned(output, i)
-                    merge!(output[i], new_entries[i])
+                    merge!(output[i], harmonize_column_types(new_entries[i]))
                 else
-                    output[i] = new_entries[i];
+                    output[i] = harmonize_column_types(new_entries[i]);
                 end
             end
         end
