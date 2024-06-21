@@ -46,7 +46,7 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
 
     # If binary data is zipped within the original zip
     if "$(survey_id).zip" ∈ readdir_output
-        run(`unzip -qq $(survey_path)/$(survey_id).zip`);
+        run(`unzip -qq $(survey_path)/$(survey_id).zip -d $(survey_path)/`);
     end
     
     # Folder inconsistency
