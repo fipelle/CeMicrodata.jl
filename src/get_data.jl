@@ -63,20 +63,20 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                 # Are there missings hiding as empty strings?
                 empty_strings = (df[!, col] .=== "") .| (df[!, col] .=== ".");
                 if sum(empty_strings) > 0
-                    df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                    df[!, col] .= convert(Vector{Union{Missing, String}}, df[!, col]);
                     df[empty_strings, col] .= missing;
                 end
 
                 try
-                    df[!, col] = passmissing(parse).(Int64, df[!, col]);
+                    df[!, col] .= passmissing(parse).(Int64, df[!, col]);
                 catch
                     try
-                        df[!, col] = passmissing(parse).(Float64, df[!, col]);
+                        df[!, col] .= passmissing(parse).(Float64, df[!, col]);
                     catch
                         try
-                            df[!, col] = convert(Vector{String}, df[!, col]);
+                            df[!, col] .= convert(Vector{String}, df[!, col]);
                         catch
-                            df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                            df[!, col] .= convert(Vector{Union{Missing, String}}, df[!, col]);
                         end
                     end
                 end
@@ -84,17 +84,17 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
             # AbstractFloat and no missings
             elseif col_type <: AbstractFloat
                 try
-                    df[!, col] = convert(Vector{Int64}, df[!, col]);
+                    df[!, col] .= convert(Vector{Int64}, df[!, col]);
                 catch
-                    df[!, col] = convert(Vector{Float64}, df[!, col]);
+                    df[!, col] .= convert(Vector{Float64}, df[!, col]);
                 end
             
             # AbstractFloat with missings
             else
                 try
-                    df[!, col] = convert(Vector{Union{Missing, Int64}}, df[!, col]);
+                    df[!, col] .= convert(Vector{Union{Missing, Int64}}, df[!, col]);
                 catch
-                    df[!, col] = convert(Vector{Union{Missing, Float64}}, df[!, col]);
+                    df[!, col] .= convert(Vector{Union{Missing, Float64}}, df[!, col]);
                 end
             end
         end
