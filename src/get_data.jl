@@ -61,7 +61,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
             if (col_type <: AbstractString) || (col_type <: Union{Missing, AbstractString})
                 
                 # Are there missings hiding as empty strings?
-                empty_strings = (df[!, col] .=== "") | (df[!, col] .=== ".");
+                empty_strings = (df[!, col] .=== "") .| (df[!, col] .=== ".");
                 if sum(empty_strings) > 0
                     df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
                     df[empty_strings, col] .= missing;
