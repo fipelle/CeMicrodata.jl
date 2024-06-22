@@ -110,8 +110,6 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
             data_dict[key][!, col] = harmonized_column!(df[!, col]);
         end
     end
-    
-    return data_dict;
 end
 
 """
@@ -233,10 +231,11 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         new_entries = ce_pumd_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
             if isassigned(new_entries, i)
+                harmonize_column_types!(new_entries[i]);
                 if isassigned(output, i)
-                    merge!(output[i], harmonize_column_types!(new_entries[i]))
+                    merge!(output[i], new_entries[i])
                 else
-                    output[i] = harmonize_column_types!(new_entries[i]);
+                    output[i] = new_entries[i];
                 end
             end
         end
