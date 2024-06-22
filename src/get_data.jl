@@ -42,11 +42,11 @@ function safe_parse_id(id::String15)
 end
 
 """
-    harmonize_column_types(data_dict::SortedDict{String, DataFrame})
+    harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
 
 Harmonise column types within SortedDict of DataFrames.
 """
-function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
+function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
     
     # Define target types
     target_types = Union{Int64, Float64, String};
@@ -238,9 +238,9 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         for i=1:n_prefixes
             if isassigned(new_entries, i)
                 if isassigned(output, i)
-                    merge!(output[i], harmonize_column_types(new_entries[i]))
+                    merge!(output[i], harmonize_column_types!(new_entries[i]))
                 else
-                    output[i] = harmonize_column_types(new_entries[i]);
+                    output[i] = harmonize_column_types!(new_entries[i]);
                 end
             end
         end
