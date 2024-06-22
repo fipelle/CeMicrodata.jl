@@ -231,11 +231,14 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         new_entries = ce_pumd_files_to_dataframes(survey_id, download_folder, prefixes);
         for i=1:n_prefixes
             if isassigned(new_entries, i)
-                harmonize_column_types!(new_entries[i]);
+                println(i)
+                ith_new_entries = new_entries[i];
+                harmonize_column_types!(ith_new_entries);
                 if isassigned(output, i)
-                    merge!(output[i], new_entries[i])
+                    println("test")
+                    merge!(output[i], ith_new_entries)
                 else
-                    output[i] = new_entries[i];
+                    output[i] = ith_new_entries;
                 end
             end
         end
