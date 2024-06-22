@@ -35,11 +35,11 @@ function quarterly_hh_level!(df::DataFrame)
     Filter out incomplete quarters
     filter!(row -> row.MONTHS_PER_REF_DATE == 3, quarterly_df);
     =#
-
-    # Adjust incomplete quarters
+    
+    # Forward-fill incomplete quarters
     quarterly_df[!, :HH_DATA] .*= 3.0; 
     quarterly_df[!, :HH_DATA] ./= quarterly_df[!, :MONTHS_PER_REF_DATE];
-    
+
     # Remove auxiliary column
     select!(quarterly_df, Not(:MONTHS_PER_REF_DATE));
 
