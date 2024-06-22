@@ -97,6 +97,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                 empty_strings = df[!, col] .== "";
                 if sum(empty_strings) > 0
                     df[empty_strings, col] .= missing;
+                end
                 
                 try
                     df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
