@@ -135,9 +135,9 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
         run(`unzip -qq $(survey_path)/$(survey_id).zip -d $(survey_path)/`);
     end
     
-    # Folder inconsistency
-    if "$(survey_id)" ∈ readdir_output
-        survey_path = "$(download_folder)/$(survey_id)/$(survey_id)";
+    # Folder structure inconsistencies
+    while "$(survey_id)" ∈ readdir_output
+        survey_path = "$(survey_path)/$(survey_id)";
         readdir_output = sort(readdir(survey_path));
     end
 
