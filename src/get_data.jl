@@ -52,13 +52,20 @@ Harmonize single-column type.
 """
 function harmonized_column!(df_col::AbstractVector{T} where {T <: Union{AbstractString, Union{Missing, AbstractString}}})
     
+    # Convert into Vector{String} or Vector{Union{Missing, String}} first
+    try
+        df_col = convert(Vector{String}, df_col);
+    catch
+        df_col = convert(Vector{Union{Missing, String}}, df_col);
+    end
+
     # Are there missings hiding as empty strings?
     empty_strings = (df_col .=== "") .| (df_col .=== ".");
     if sum(empty_strings) > 0
         df_col = convert(Vector{Union{Missing, String}}, df_col);
         df_col[empty_strings] .= missing;
     end
-
+    
     try
         return passmissing(parse).(Int64, df_col);
     catch
