@@ -45,6 +45,8 @@ end
     harmonized_column!(df_col::AbstractVector{T} where {T <: Union{AbstractString, Union{Missing, AbstractString}}})
     harmonized_column!(df_col::AbstractVector{T} where {T <: AbstractFloat})
     harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing, AbstractFloat}})
+    harmonized_column!(df_col::AbstractVector{T} where {T <: Integer})
+    harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing, Integer}})
 
 Harmonize single-column type.
 """
@@ -86,6 +88,14 @@ function harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing,
     catch
         return convert(Vector{Union{Missing, Float64}}, df_col);
     end
+end
+
+function harmonized_column!(df_col::AbstractVector{T} where {T <: Integer})
+    return convert(Vector{Int64}, df_col);
+end
+
+function harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing, Integer}})
+    return convert(Vector{Union{Missing, Int64}}, df_col);
 end
 
 """
