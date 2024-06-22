@@ -59,17 +59,33 @@ function harmonize_column_types(data_dict::SortedDict{String, DataFrame})
             col_type = eltype(df[!, col]);
             
             if col_type <: AbstractString
-                try
-                    df[!, col] = parse.(Int64, df[!, col]);
-                catch
+                
+                # Are there missings hiding as empty strings?
+                empty_strings = df[!, col] .== "";
+                if sum(empty_strings) > 0
+                    df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                    df[empty_strings, col] .= missing;
+                
+                # No missings
+                else
                     try
-                        df[!, col] = parse.(Float64, df[!, col]);
+                        df[!, col] = parse.(Int64, df[!, col]);
                     catch
-                        df[!, col] = convert(Vector{String}, df[!, col]);
+                        try
+                            df[!, col] = parse.(Float64, df[!, col]);
+                        catch
+                            df[!, col] = convert(Vector{String}, df[!, col]);
+                        end
                     end
                 end
             
             elseif col_type <: Union{Missing, AbstractString}
+
+                # Are there missings hiding as empty strings?
+                empty_strings = df[!, col] .== "";
+                if sum(empty_strings) > 0
+                    df[empty_strings, col] .= missing;
+                
                 try
                     df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
                 catch
