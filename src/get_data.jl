@@ -65,8 +65,19 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                 if sum(empty_strings) > 0
                     df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
                     df[empty_strings, col] .= missing;
+                    
+                    # AbstractString with missings
+                    try
+                        df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
+                    catch
+                        try
+                            df[!, col] = parse.(Union{Missing, Float64}, df[!, col]);
+                        catch
+                            df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                        end
+                    end
                 
-                # No missings
+                # AbstractString and no missings
                 else
                     try
                         df[!, col] = parse.(Int64, df[!, col]);
@@ -79,6 +90,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                     end
                 end
             
+            # Other case with AbstractString and missings
             elseif col_type <: Union{Missing, AbstractString}
 
                 # Are there missings hiding as empty strings?
@@ -96,6 +108,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                     end
                 end
             
+            # AbstractFloat and no missings
             elseif col_type <: AbstractFloat
                 try
                     df[!, col] = convert(Vector{Int64}, df[!, col]);
@@ -103,6 +116,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                     df[!, col] = convert(Vector{Float64}, df[!, col]);
                 end
             
+            # AbstractFloat with missings
             else
                 try
                     df[!, col] = convert(Vector{Union{Missing, Int64}}, df[!, col]);
