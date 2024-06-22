@@ -73,7 +73,7 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
                         try
                             df[!, col] = parse.(Union{Missing, Float64}, df[!, col]);
                         catch
-                            df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                            nothing; # already converted as appropriate at line 66
                         end
                     end
                 
