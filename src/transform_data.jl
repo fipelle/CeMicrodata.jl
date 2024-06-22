@@ -106,29 +106,39 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
 
         # Copy original data
         v_copy = copy(v); # this line slows done the code, but allows to compute the hh level data without changing the input monthly table
-        UCC_column_as_strings!(v_copy, v_copy[!,:UCC]);
+        UCC_column_as_strings!(v_copy, v_copy[!, :UCC]); # TBD: change to allow for consistency across UCCs starting for 0
 
         for row in eachrow(v_copy)
-            if row[ref_year] < 20 # YY rather than YYYY and referring to 20YY
-                row[ref_year] += 2000;
-            elseif 20 < row[ref_year] < 100 # YY rather than YYYY and referring to 19YY
+            if 80 < row[ref_year] <= 99 # YY rather than YYYY and referring to 19YY
                 row[ref_year] += 1900;
+            elseif row[ref_year] < 30 # YY rather than YYYY and referring to 20YY
+                row[ref_year] += 2000;
             end
         end
 
         if !isnothing(UCC_selection)
             @transform! v_copy @byrow :include_UCC = :UCC ∈ UCC_selection;
-            v_copy = v_copy[findall(v_copy[!,:include_UCC]), :];
+            v_copy = v_copy[v_copy[!, :include_UCC], :];
         end
 
         # Aggregate at monthly frequency to remove duplicates
         transform!(v_copy, [ref_year, ref_month] => ByRow((year, month) -> Dates.lastdayofmonth(Date(year, month))) => :REF_DATE);
-
+        
         if is_itbi
+
+            # Drop missing before aggregating
+            dropmissing!(v_copy, [:VALUE]);
+
+            # Group by HH and date
             v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :VALUE=>sum);
             rename!(v_grouped, Dict(:VALUE_sum => "HH_DATA"));
 
         else
+            
+            # Drop missing before aggregating
+            dropmissing!(v_copy, [:COST]);
+            
+            # Group by HH and date
             v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :COST=>sum);
             rename!(v_grouped, Dict(:COST_sum => "HH_DATA"));
         end
