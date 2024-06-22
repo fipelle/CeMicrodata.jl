@@ -42,61 +42,62 @@ function safe_parse_id(id::String15)
 end
 
 """
+    harmonized_column!(df_col::AbstractVector{Union{AbstractString, Union{Missing, AbstractString}}})
+    harmonized_column!(df_col::AbstractVector{AbstractFloat})
+    harmonized_column!(df_col::AbstractVector{Union{Missing, AbstractFloat}})
+
+Harmonize single-column type.
+"""
+function harmonized_column!(df_col::AbstractVector{Union{AbstractString, Union{Missing, AbstractString}}})
+    
+    # Are there missings hiding as empty strings?
+    empty_strings = (df_col .=== "") .| (df_col .=== ".");
+    if sum(empty_strings) > 0
+        df_col = convert(Vector{Union{Missing, String}}, df_col);
+        df_col[empty_strings] .= missing;
+    end
+
+    try
+        return passmissing(parse).(Int64, df_col);
+    catch
+        try
+            return passmissing(parse).(Float64, df_col);
+        catch
+            try
+                return convert(Vector{String}, df_col);
+            catch
+                return convert(Vector{Union{Missing, String}}, df_col);
+            end
+        end
+    end
+end
+
+function harmonized_column!(df_col::AbstractVector{AbstractFloat})
+    try
+        return convert(Vector{Int64}, df_col);
+    catch
+        return convert(Vector{Float64}, df_col);
+    end
+end
+
+function harmonized_column!(df_col::AbstractVector{Union{Missing, AbstractFloat}})
+    try
+        return convert(Vector{Union{Missing, Int64}}, df_col);
+    catch
+        return convert(Vector{Union{Missing, Float64}}, df_col);
+    end
+end
+
+"""
     harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
 
 Harmonise column types within SortedDict of DataFrames.
 """
 function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
     
-    # Define target types
-    target_types = Union{Int64, Float64, String};
-    
     for (key, df) in data_dict
-
-        for col in names(df)
-
-            # Check the current type of the column
-            col_type = eltype(df[!, col]);
-            
-            if (col_type <: AbstractString) || (col_type <: Union{Missing, AbstractString})
-                
-                # Are there missings hiding as empty strings?
-                empty_strings = (df[!, col] .=== "") .| (df[!, col] .=== ".");
-                if sum(empty_strings) > 0
-                    df[!, col] .= convert(Vector{Union{Missing, String}}, df[!, col]);
-                    df[empty_strings, col] .= missing;
-                end
-
-                try
-                    df[!, col] .= passmissing(parse).(Int64, df[!, col]);
-                catch
-                    try
-                        df[!, col] .= passmissing(parse).(Float64, df[!, col]);
-                    catch
-                        try
-                            df[!, col] .= convert(Vector{String}, df[!, col]);
-                        catch
-                            df[!, col] .= convert(Vector{Union{Missing, String}}, df[!, col]);
-                        end
-                    end
-                end
-            
-            # AbstractFloat and no missings
-            elseif col_type <: AbstractFloat
-                try
-                    df[!, col] .= convert(Vector{Int64}, df[!, col]);
-                catch
-                    df[!, col] .= convert(Vector{Float64}, df[!, col]);
-                end
-            
-            # AbstractFloat with missings
-            else
-                try
-                    df[!, col] .= convert(Vector{Union{Missing, Int64}}, df[!, col]);
-                catch
-                    df[!, col] .= convert(Vector{Union{Missing, Float64}}, df[!, col]);
-                end
-            end
+        for col in names(df)            
+            data_dict[key][!, col] = harmonized_column!(df[!, col]);
         end
     end
     
