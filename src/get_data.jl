@@ -149,8 +149,8 @@ function ce_pumd_files_to_dataframes(survey_id::String, download_folder::String,
             # Store current ce_pumd file into a DataFrame
 
             # Remove comment for csv files
-            new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
-            # new_SortedDict_item = DataFrame(readstat("$(survey_path)/$(file_name_ext)"));
+            # new_SortedDict_item = CSV.read("$(survey_path)/$(file_name_ext)", missingstring=["", "."], DataFrame);
+            new_SortedDict_item = DataFrame(readstat("$(survey_path)/$(file_name_ext)"));
             
             # Capitalize all column names (this is to align sas and stata files to csv)
             rename!(new_SortedDict_item, Symbol.(uppercase.(String.(names(new_SortedDict_item)))));
@@ -207,13 +207,15 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
             @info("Downloading survey referring to year $(t)");
         end
         
+        #=
         if t >= 2022
             download_prefix = "csv";
         else
             download_prefix = "comma";
         end
+        =#
 
-        # download_prefix = "stata";
+        download_prefix = "sas";
         
         download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
         survey_id = download_ce_pumd_files(string(t), is_interview_survey, download_prefix, download_folder);
