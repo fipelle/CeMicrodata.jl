@@ -42,13 +42,13 @@ function safe_parse_id(id::String15)
 end
 
 """
-    harmonized_column!(df_col::AbstractVector{Union{AbstractString, Union{Missing, AbstractString}}})
-    harmonized_column!(df_col::AbstractVector{AbstractFloat})
-    harmonized_column!(df_col::AbstractVector{Union{Missing, AbstractFloat}})
+    harmonized_column!(df_col::AbstractVector{T} where {T <: Union{AbstractString, Union{Missing, AbstractString}}})
+    harmonized_column!(df_col::AbstractVector{T} where {T <: AbstractFloat})
+    harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing, AbstractFloat}})
 
 Harmonize single-column type.
 """
-function harmonized_column!(df_col::AbstractVector{Union{AbstractString, Union{Missing, AbstractString}}})
+function harmonized_column!(df_col::AbstractVector{T} where {T <: Union{AbstractString, Union{Missing, AbstractString}}})
     
     # Are there missings hiding as empty strings?
     empty_strings = (df_col .=== "") .| (df_col .=== ".");
@@ -72,7 +72,7 @@ function harmonized_column!(df_col::AbstractVector{Union{AbstractString, Union{M
     end
 end
 
-function harmonized_column!(df_col::AbstractVector{AbstractFloat})
+function harmonized_column!(df_col::AbstractVector{T} where {T <: AbstractFloat})
     try
         return convert(Vector{Int64}, df_col);
     catch
@@ -80,7 +80,7 @@ function harmonized_column!(df_col::AbstractVector{AbstractFloat})
     end
 end
 
-function harmonized_column!(df_col::AbstractVector{Union{Missing, AbstractFloat}})
+function harmonized_column!(df_col::AbstractVector{T} where {T <: Union{Missing, AbstractFloat}})
     try
         return convert(Vector{Union{Missing, Int64}}, df_col);
     catch
