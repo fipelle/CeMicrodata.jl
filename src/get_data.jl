@@ -215,7 +215,7 @@ function get_data(prefixes::Vector{String}, is_interview_survey::Bool, from_year
         end
         =#
 
-        download_prefix = "sas";
+        download_prefix = "stata";
         
         download_folder = mktempdir(prefix="ce_pumd_", cleanup=true);
         survey_id = download_ce_pumd_files(string(t), is_interview_survey, download_prefix, download_folder);
