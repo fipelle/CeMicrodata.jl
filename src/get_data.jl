@@ -58,54 +58,26 @@ function harmonize_column_types!(data_dict::SortedDict{String, DataFrame})
             # Check the current type of the column
             col_type = eltype(df[!, col]);
             
-            if col_type <: AbstractString
+            if (col_type <: AbstractString) || (col_type <: Union{Missing, AbstractString})
                 
                 # Are there missings hiding as empty strings?
                 empty_strings = df[!, col] .== "";
                 if sum(empty_strings) > 0
                     df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
                     df[empty_strings, col] .= missing;
-                    
-                    # AbstractString with missings
-                    try
-                        df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
-                    catch
-                        try
-                            df[!, col] = parse.(Union{Missing, Float64}, df[!, col]);
-                        catch
-                            nothing; # already converted as appropriate at line 66
-                        end
-                    end
-                
-                # AbstractString and no missings
-                else
-                    try
-                        df[!, col] = parse.(Int64, df[!, col]);
-                    catch
-                        try
-                            df[!, col] = parse.(Float64, df[!, col]);
-                        catch
-                            df[!, col] = convert(Vector{String}, df[!, col]);
-                        end
-                    end
                 end
-            
-            # Other case with AbstractString and missings
-            elseif col_type <: Union{Missing, AbstractString}
 
-                # Are there missings hiding as empty strings?
-                empty_strings = df[!, col] .== "";
-                if sum(empty_strings) > 0
-                    df[empty_strings, col] .= missing;
-                end
-                
                 try
-                    df[!, col] = parse.(Union{Missing, Int64}, df[!, col]);
+                    df[!, col] = passmissing(parse).(Int64, df[!, col]);
                 catch
                     try
-                        df[!, col] = parse.(Union{Missing, Float64}, df[!, col]);
+                        df[!, col] = passmissing(parse).(Float64, df[!, col]);
                     catch
-                        df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                        try
+                            df[!, col] = convert(Vector{String}, df[!, col]);
+                        catch
+                            df[!, col] = convert(Vector{Union{Missing, String}}, df[!, col]);
+                        end
                     end
                 end
             
