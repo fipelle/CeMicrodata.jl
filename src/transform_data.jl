@@ -31,10 +31,18 @@ function quarterly_hh_level!(df::DataFrame)
     rename!(quarterly_df, Dict(:HH_DATA_sum => "HH_DATA"));
     rename!(quarterly_df, Dict(:REFMO_function => "MONTHS_PER_REF_DATE"));
 
-    # Filter out incomplete quarters
+    #=
+    Filter out incomplete quarters
     filter!(row -> row.MONTHS_PER_REF_DATE == 3, quarterly_df);
-    select!(quarterly_df, Not(:MONTHS_PER_REF_DATE));
+    =#
+
+    # Adjust incomplete quarters
+    quarterly_df[!, :HH_DATA] .*= 3.0; 
+    quarterly_df[!, :HH_DATA] ./= quarterly_df[!, :MONTHS_PER_REF_DATE];
     
+    # Remove auxiliary column
+    select!(quarterly_df, Not(:MONTHS_PER_REF_DATE));
+
     # Return output
     return quarterly_df;
 end
@@ -137,7 +145,7 @@ function get_hh_level(input_dict::SortedDict{String, DataFrame}; is_itbi::Bool=f
             
             # Drop missing before aggregating
             dropmissing!(v_copy, [:COST]);
-            
+
             # Group by HH and date
             v_grouped = combine(groupby(v_copy, [:CUSTOM_CUID, :REF_DATE]), :COST=>sum);
             rename!(v_grouped, Dict(:COST_sum => "HH_DATA"));
